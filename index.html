@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Казино проеби все бабки.com</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: radial-gradient(circle, #2b003a 0%, #0f0018 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .casino-container {
+            background: linear-gradient(145deg, #1f1a3a, #0d0b18);
+            border: 4px solid #ffcc00;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 0 30px #ffcc0044, inset 0 0 15px #000;
+            text-align: center;
+            max-width: 450px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #ffcc00;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #ffcc0077;
+            text-transform: uppercase;
+        }
+
+        .balance-container {
+            background-color: #251e3e;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+            border: 1px solid #443963;
+        }
+
+        #balance {
+            color: #00ffcc;
+            font-weight: bold;
+        }
+
+        .slots {
+            display: flex;
+            justify-content: space-between;
+            background-color: #000;
+            padding: 20px;
+            border-radius: 15px;
+            border: 3px solid #ff0055;
+            box-shadow: inset 0 0 20px rgba(255, 0, 85, 0.5);
+            margin-bottom: 25px;
+        }
+
+        .slot {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(to bottom, #ffffff 0%, #e0e0e0 100%);
+            border-radius: 10px;
+            font-size: 3.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 5px 10px rgba(0,0,0,0.3);
+            transition: transform 0.1s ease-in-out;
+        }
+
+        .spin-animation {
+            animation: bounce 0.1s infinite alternate;
+        }
+
+        @keyframes bounce {
+            0% { transform: translateY(-5px); }
+            100% { transform: translateY(5px); }
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .bet-select {
+            background-color: #251e3e;
+            color: white;
+            border: 1px solid #ffcc00;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .spin-btn {
+            background: linear-gradient(135deg, #ff0055 0%, #990033 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 0, 85, 0.4);
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .spin-btn:hover {
+            background: linear-gradient(135deg, #ff3377 0%, #b3003b 100%);
+            transform: translateY(-2px);
+        }
+
+        .spin-btn:disabled {
+            background: #444;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            min-height: 30px;
+            font-weight: bold;
+        }
+
+        .win { color: #00ff66; text-shadow: 0 0 10px rgba(0,255,102,0.4); }
+        .lose { color: #ff3333; }
+        
+        .reset-btn {
+            background: transparent;
+            color: #776a9c;
+            border: none;
+            margin-top: 15px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .reset-btn:hover { color: #fff; }
+    </style>
+</head>
+<body>
+
+    <div class="casino-container">
+        <h1>Слот Машина 🎰</h1>
+        
+        <div class="balance-container">
+            Виртуальный баланс: <span id="balance">100</span> 🪙
+        </div>
+
+        <div class="slots">
+            <div class="slot" id="slot1">🍒</div>
+            <div class="slot" id="slot2">🍋</div>
+            <div class="slot" id="slot3">🍀</div>
+        </div>
+
+        <div class="controls">
+            <label for="bet">Выберите ставку:</label>
+            <select id="bet" class="bet-select">
+                <option value="5">5 🪙</option>
+                <option value="10" selected>10 🪙</option>
+                <option value="25">25 🪙</option>
+                <option value="50">50 🪙</option>
+            </select>
+
+            <button id="spin-button" class="spin-btn" onclick="playSlots()">Крутить!</button>
+        </div>
+
+        <div class="message" id="msg-display">Испытай свою удачу!</div>
+        <button class="reset-btn" onclick="resetBalance()">Сбросить баланс до 100</button>
+    </div>
+
+    <script>
+        // Загрузка баланса из памяти браузера или 100 по умолчанию
+        let currentBalance = parseInt(localStorage.getItem('casino_balance')) || 100;
+        const items = ['🍒', '🍋', '🍀', '💎', '7️⃣'];
+
+        // DOM элементы
+        const balanceEl = document.getElementById('balance');
+        const slot1El = document.getElementById('slot1');
+        const slot2El = document.getElementById('slot2');
+        const slot3El = document.getElementById('slot3');
+        const betEl = document.getElementById('bet');
+        const msgEl = document.getElementById('msg-display');
+        const spinBtn = document.getElementById('spin-button');
+
+        // Отображаем сохраненный баланс при загрузке
+        balanceEl.innerText = currentBalance;
+
+        function updateBalance(value) {
+            currentBalance = value;
+            balanceEl.innerText = currentBalance;
+            localStorage.setItem('casino_balance', currentBalance); // Сохраняем в браузер
+        }
+
+        function resetBalance() {
+            if(confirm("Хочешь обнулить счет до 100 монет?")) {
+                updateBalance(100);
+                msgEl.innerText = "Баланс успешно сброшен!";
+                msgEl.className = "message";
+            }
+        }
+
+        function getRandomItem() {
+            return items[Math.floor(Math.random() * items.length)];
+        }
+
+        function playSlots() {
+            const betAmount = parseInt(betEl.value);
+
+            if (currentBalance < betAmount) {
+                msgEl.innerText = "❌ Недостаточно монет для ставки!";
+                msgEl.className = "message lose";
+                return;
+            }
+
+            // Снимаем ставку
+            updateBalance(currentBalance - betAmount);
+            
+            spinBtn.disabled = true;
+            msgEl.innerText = "🎰 Барабаны крутятся...";
+            msgEl.className = "message";
+
+            slot1El.classList.add('spin-animation');
+            slot2El.classList.add('spin-animation');
+            slot3El.classList.add('spin-animation');
+
+            setTimeout(() => {
+                slot1El.classList.remove('spin-animation');
+                slot2El.classList.remove('spin-animation');
+                slot3El.classList.remove('spin-animation');
+
+                const res1 = getRandomItem();
+                const res2 = getRandomItem();
+                const res3 = getRandomItem();
+
+                slot1El.innerText = res1;
+                slot2El.innerText = res2;
+                slot3El.innerText = res3;
+
+                let newBalance = currentBalance;
+
+                if (res1 === res2 && res2 === res3) {
+                    let winPrize = betAmount * 5;
+                    if (res1 === '7️⃣') winPrize = betAmount * 10; 
+                    
+                    newBalance += winPrize;
+                    msgEl.innerText = `🎉 ДЖЕКПОТ! Вы выиграли ${winPrize} 🪙!`;
+                    msgEl.className = "message win";
+                } else if (res1 === res2 || res2 === res3 || res1 === res3) {
+                    const winPrize = betAmount * 2;
+                    newBalance += winPrize;
+                    msgEl.innerText = `💵 Совпадение! Вы выиграли ${winPrize} 🪙!`;
+                    msgEl.className = "message win";
+                } else {
+                    msgEl.innerText = "😢 Не повезло, попробуй еще раз!";
+                    msgEl.className = "message lose";
+                }
+
+                updateBalance(newBalance);
+                spinBtn.disabled = false;
+
+                if (currentBalance === 0) {
+                    setTimeout(() => {
+                        updateBalance(20);
+                        msgEl.innerText = "🎁  бонус: лови 20 🪙 спасение!";
+                        msgEl.className = "message win";
+                    }, 1500);
+                }
+
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
